@@ -1,8 +1,7 @@
 const http = require('http');
 const nStatic = require('node-static');
 const fileServer = new nStatic.Server('./public');
-const host = 'localhost';
-const port = 3000;
+const port = process.env.PORT || 3000;
 const apiKey = '8f6c90b85a72bcbe81565f1d59f78279';
 let location = '';
 let locationData;
@@ -58,8 +57,8 @@ http.createServer((req, res) => {
       res.end(locationData);
     })
   }
-}).listen(port, host, () => {
-  console.log(`Server is now running on http://${host}:${port}`);
+}).listen(port, () => {
+  console.log(`Server is now running on port ${port}`);
 });
 
 
