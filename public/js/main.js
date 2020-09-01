@@ -22,8 +22,8 @@ function updatePage(data) {
   longitude.innerText = "Longitude: " + data.coord.lon;
   weather.innerText = "Weather Type: " + data.weather[0].main;
   weatherDesc.innerText = "Weather Description: " + data.weather[0].description;
-  temp.innerText = "Temperature: " + data.main.temp;
-  pressure.innerText = "Pressure: " + data.main.pressure;
+  temp.innerText = "Temperature: " + (Number(data.main.temp) - 273.15).toFixed(0) + " °";
+  pressure.innerText = "Pressure: " + data.main.pressure + " Pa";
   humidity.innerText = "Humidity: " + data.main.humidity;
 }
 
@@ -39,22 +39,28 @@ weatherSearchForm.addEventListener('submit',e => {
   console.log(location);
   // Sending the location to the server
   fetch('./post_location', { method: 'POST', body: JSON.stringify(location) })
-    .then(res => res.json())
-    .then(data => {
-      setTimeout(() => {
-        // Getting the location from the server
-        fetch('./get_location_data')
-          .then(res => res.json())
-          .then(data => {
-            // These are for the transition effects
-            locationInfo.style.color = '#fff';
-            locationInfo.style.boxShadow = '0 8px 6px -6px #115962';
-            locationInfo.style.background = '#020a0b';
-            locationInfo.style.background = 'linear-gradient(45deg, #020a0b 0%, #041719 120%)';
-            results.classList.remove('lds-roller');
-            updatePage(data);
-          });
-      }, 3000); //I waited for 3 seconds because of the asynchronous operation going on in the server to get the location. Tried all I could to fix it. I'll probably fix this in the future.
+    .then(res => res.json)
+    .then(() => {
+        const getLocationData = () => {
+          // Getting the location from the server
+          fetch('./get_location_data')
+            .then(res => res.json())
+            .then(data => {
+              console.log(data);
+              if(data.message === 'waiting') {
+                return setTimeout(() => getLocationData(), 3000)
+              }
+              // These are for the transition effects
+              locationInfo.style.color = '#fff';
+              locationInfo.style.boxShadow = '0 8px 6px -6px #115962';
+              locationInfo.style.background = '#020a0b';
+              locationInfo.style.background = 'linear-gradient(45deg, #020a0b 0%, #041719 120%)';
+              results.classList.remove('lds-roller');
+              updatePage(data);
+            });
+        };
+
+        getLocationData();
     });
 
 });
